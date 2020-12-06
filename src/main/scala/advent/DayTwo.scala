@@ -1,11 +1,13 @@
 package advent
 
-import advent.Loader.lines
+import scala.io.Source
 
-object DayTwo {
+object DayTwo extends App {
+  def lines(day: Int): List[String] = Source.fromResource(day.toString).getLines().toList
 
   case class Passwords(range: Range, letter: Char, password: String)
   case class PasswordsPartTwo(positions: (Int, Int), letter: Char, password: String)
+
   def resultPartOne(): Int = lines(2).map(line => {
     line.replace(":", "").split(" ") match {
       case Array(rangeString, letter, password) =>
@@ -25,4 +27,7 @@ object DayTwo {
         PasswordsPartTwo(range, letter.head, password)
     }
   }).count(p => p.password.charAt(p.positions._1 - 1) == p.letter ^ p.password.charAt(p.positions._2 - 1) == p.letter)
+
+  println(resultPartOne())
+  println(resultPartTwo())
 }

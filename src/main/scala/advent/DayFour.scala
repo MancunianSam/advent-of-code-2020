@@ -1,9 +1,12 @@
 package advent
 
-import advent.Loader._
+import advent.DaySix.{resultPartOne, resultPartTwo}
 
-object DayFour {
+import scala.io.Source
 
+object DayFour extends App {
+
+  def lines(day: Int): List[String] = Source.fromResource(day.toString).getLines().toList
   case class Passport(byr: Option[String], iyr: Option[String], eyr: Option[String], hgt: Option[String], hcl: Option[String], ecl: Option[String], pid: Option[String])
 
   def heightFilter(height: String): Boolean = {
@@ -18,12 +21,12 @@ object DayFour {
   val eyeColours = List("amb", "blu", "brn", "gry", "grn", "hzl", "oth")
 
   implicit class PassportMapUtils(pm: Map[String, String]) {
-    def toPassport = Passport(pm.get("byr"), pm.get("iyr"), pm.get("eyr"), pm.get("hgt"), pm.get("hcl"), pm.get("ecl"), pm.get("pid"))
+    def toPassport: _root_.advent.DayFour.Passport = Passport(pm.get("byr"), pm.get("iyr"), pm.get("eyr"), pm.get("hgt"), pm.get("hcl"), pm.get("ecl"), pm.get("pid"))
   }
 
-  def isComplete(p: Passport) = p.byr.isDefined && p.iyr.isDefined && p.eyr.isDefined && p.hgt.isDefined && p.hcl.isDefined & p.ecl.isDefined && p.pid.isDefined
+  def isComplete(p: Passport): Boolean = p.byr.isDefined && p.iyr.isDefined && p.eyr.isDefined && p.hgt.isDefined && p.hcl.isDefined & p.ecl.isDefined && p.pid.isDefined
 
-  def isCompletePartTwo(p: Passport) = {
+  def isCompletePartTwo(p: Passport): Boolean = {
     for {
       byr <- p.byr if 1920 to 2002 contains byr.toInt
       iyr <- p.iyr if 2010 to 2020 contains iyr.toInt
@@ -37,7 +40,7 @@ object DayFour {
     } yield pid
   }.isDefined
 
-  def result(fn: Passport => Boolean) = {
+  def result(fn: Passport => Boolean): Int = {
     val s = lines(4)
     s.mkString("\n").split("\\n\\n")
       .count(f => {
@@ -46,11 +49,6 @@ object DayFour {
       })
   }
 
-  def resultPartOne(): Int = {
-    result(isComplete)
-  }
-
-  def resultPartTwo(): Int = {
-    result(isCompletePartTwo)
-  }
+  println(result(isComplete))
+  println(result(isCompletePartTwo))
 }

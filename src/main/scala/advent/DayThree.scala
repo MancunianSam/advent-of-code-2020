@@ -1,10 +1,10 @@
 package advent
 
-import Loader._
-
 import scala.annotation.tailrec
+import scala.io.Source
 
-object DayThree {
+object DayThree extends App {
+  def lines(day: Int): List[String] = Source.fromResource(day.toString).getLines().toList
 
   def countTrees(right: Int, down: Int): Int = {
     val slope = lines(3)
@@ -15,7 +15,6 @@ object DayThree {
     @tailrec
     def toboggan(x: Int, y: Int, count: Int): Int = {
       if (y >= height) {
-        println(count)
         count
       } else {
         val updatedCount = slope(y).charAt(x) match {
@@ -29,9 +28,18 @@ object DayThree {
     toboggan(0, 0, 0)
   }
 
+  def slopesResult(slopes: List[(Int, Int)]) = slopes.map(s => countTrees(s._1, s._2).toLong
+  ).foldLeft(1L)((a, b) => a * b)
+
   def resultPartOne(): Long = {
-    val slopes = List((1, 1), (3, 1), (5, 1), (7, 1), (1, 2))
-    slopes.map(s => countTrees(s._1, s._2).toLong
-    ).foldLeft(1L)((a, b) => a * b)
+    slopesResult(List((3,1)))
   }
+
+  def resultPartTwo(): Long = {
+    val slopes = List((1, 1), (3, 1), (5, 1), (7, 1), (1, 2))
+    slopesResult(slopes)
+  }
+
+  println(resultPartOne())
+  println(resultPartTwo())
 }

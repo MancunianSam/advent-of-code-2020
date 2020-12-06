@@ -1,11 +1,15 @@
 package advent
 
-import advent.Loader.lines
+
+
+import advent.DaySix.{resultPartOne, resultPartTwo}
 
 import scala.annotation.tailrec
+import scala.io.Source
 import scala.language.postfixOps
 
-object DayFive {
+object DayFive extends App {
+  def lines(day: Int): List[String] = Source.fromResource(day.toString).getLines().toList
 
   implicit class CharUtils(c: Char) {
     def idx: Int = c match {
@@ -37,15 +41,14 @@ object DayFive {
     seatRow * 8 + seatColumn
   })
 
-  def resultPartOne(): Int = {
-    seatNumbers.max
-  }
-
   def resultPartTwo(): Option[Int] = {
     val allSeats = for {
       row <- (0 to 127).toList
       column <- (0 to 7).toList
-    } yield row * column
+    } yield row * 8 + column
     allSeats.toSet.diff(seatNumbers.toSet).find(num => seatNumbers.contains(num + 1) && seatNumbers.contains(num -1))
   }
+
+  println(seatNumbers.max)
+  println(resultPartTwo())
 }

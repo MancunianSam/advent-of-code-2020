@@ -1,7 +1,9 @@
 package advent
-import Loader._
 
-object DayOne {
+import scala.io.Source
+
+object DayOne extends App {
+  def lines(day: Int): List[String] = Source.fromResource(day.toString).getLines().toList
   lazy val intLines: List[Int] = lines(1).map(_.toInt)
 
   def resultPartOne(): Int = {
@@ -21,6 +23,7 @@ object DayOne {
     } yield x * y * z
   }.head
 
-
+  println(resultPartOne())
+  println(resultPartTwo())
 }
 
