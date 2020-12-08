@@ -4,14 +4,25 @@ import scala.annotation.tailrec
 import scala.io.Source
 
 object DayEight extends App {
+  case class Input(acc: Int, pos: Int, arg: Int)
 
-  trait Operation
+  case class Output(acc: Int, pos: Int)
 
-  case class Nop() extends Operation
+  trait Operation {
+    def next(vals: Input): Output
+  }
 
-  case class Acc() extends Operation
+  case class Nop() extends Operation {
+    override def next(vals: Input): Output = Output(vals.acc, vals.pos + 1)
+  }
 
-  case class Jmp() extends Operation
+  case class Acc() extends Operation {
+    override def next(vals: Input): Output = Output(vals.acc + vals.arg, vals.pos + 1)
+  }
+
+  case class Jmp() extends Operation {
+    override def next(vals: Input): Output = Output(vals.acc, vals.pos + vals.arg)
+  }
 
   case class Instruction(operation: Operation, argument: Int, idx: Int)
 
@@ -36,19 +47,15 @@ object DayEight extends App {
       (acc, instructionPosition)
     } else {
       val instruction = instructions(instructionPosition)
-      val args: (Int, Int) = instruction.operation match {
-        case Acc() => (acc + instruction.argument, instructionPosition + 1)
-        case Jmp() => (acc, instructionPosition + instruction.argument)
-        case Nop() => (acc, instructionPosition + 1)
-      }
-      processInstructions(args._1, args._2, instructionPosition :: executedPositions, instructions)
+      val out = instruction.operation.next(Input(acc, instructionPosition, instruction.argument))
+      processInstructions(out.acc, out.pos, instructionPosition :: executedPositions, instructions)
     }
   }
 
   @tailrec
   def processBrokenSet(currentPosition: Int): Int = {
     val i: Instruction = instructions(currentPosition)
-    val newInstructions: List[Instruction] = instructions.patch(currentPosition, List(Instruction(swapOp(i.operation), i.argument, i.idx)), 1)
+    val newInstructions: List[Instruction] = instructions.patch(currentPosition, List(Instruction(i.operation.swapOp, i.argument, i.idx)), 1)
     val (acc, pos) = processInstructions(0, 0, List(), newInstructions)
     if (pos == instructions.length) {
       acc
@@ -57,21 +64,21 @@ object DayEight extends App {
     }
   }
 
-  def swapOp(operation: Operation): Operation =
-    operation match {
+  implicit class OperationUtils(operation: Operation) {
+    def swapOp: Operation = operation match {
       case n: Nop => Jmp()
       case j: Jmp => Nop()
     }
 
-  def isNopOrJmp(operation: Operation): Boolean =
-    operation match {
-      case n: Nop => true
-      case j: Jmp => true
-      case _ => false
-    }
+    def isNopOrJmp: Boolean =
+      operation match {
+        case Nop() | Jmp() => true
+        case _ => false
+      }
+  }
 
-  def findNextInstructionPosition(currentPosition: Int) =
-    instructions.find(i => isNopOrJmp(i.operation) && i.idx > currentPosition).map(_.idx).get
+  def findNextInstructionPosition(currentPosition: Int): Int =
+    instructions.find(i => i.operation.isNopOrJmp && i.idx > currentPosition).map(_.idx).get
 
   println(processInstructions(0, 0, List(), instructions))
   println(processBrokenSet(findNextInstructionPosition(0)))
