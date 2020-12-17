@@ -5,13 +5,18 @@ import scala.io.Source
 
 object DaySeventeen extends App {
 
+  val source = Source.fromResource("17").getLines.toList.map(_.toCharArray.toList)
+
   trait State {}
+
   trait Cube extends Product with Serializable {
     def neighbours(): List[Cube]
+
     def currentState(stateMap: Map[Cube, State]): State = stateMap.getOrElse(this, Inactive())
+
     def nextState(stateMap: Map[Cube, State]): State = {
       val neighbours = this.neighbours()
-      val active = neighbours.map(_.currentState(stateMap)) count  {
+      val active = neighbours.map(_.currentState(stateMap)) count {
         case Active() => true
         case _ => false
       }
@@ -29,14 +34,13 @@ object DaySeventeen extends App {
 
   case class Inactive() extends State
 
-  case class StateCount(active: Long, inactive: Long)
-
   trait CubeState {
     def stateMap(): Map[Cube, State]
   }
 
-  case class HyperCubeState() extends CubeState {
+  val hyperCubeState: CubeState = new CubeState {
     val inital4DUniverse: List[List[List[List[Char]]]] = List(List(source))
+
     override def stateMap(): Map[Cube, State] = {
       for {
         w <- inital4DUniverse.zipWithIndex
@@ -50,8 +54,9 @@ object DaySeventeen extends App {
     }.toMap
   }
 
-  case class NormalCubeState() extends CubeState {
+  val normalCubeState: CubeState = new CubeState {
     val inital3DUniverse: List[List[List[Char]]] = List(source)
+
     override def stateMap(): Map[Cube, State] = {
       for {
         z <- inital3DUniverse.zipWithIndex
@@ -63,8 +68,6 @@ object DaySeventeen extends App {
       })
     }.toMap
   }
-
-  val source = Source.fromResource("17").getLines.toList.map(_.toCharArray.toList)
 
   case class HyperCube(x: Long, y: Long, z: Long, w: Long) extends Cube {
     override def neighbours(): List[Cube] = for {
@@ -99,12 +102,12 @@ object DaySeventeen extends App {
       val newCount = newState.count(c => c._2 match {
         case Active() => true
         case Inactive() => false
-        case _ =>false
+        case _ => false
       })
       runCycles(newState, cycle + 1, newCount)
     }
   }
 
-  println(runCycles(NormalCubeState().stateMap()))
-  println(runCycles(HyperCubeState().stateMap()))
+  println(runCycles(normalCubeState.stateMap()))
+  println(runCycles(hyperCubeState.stateMap()))
 }
