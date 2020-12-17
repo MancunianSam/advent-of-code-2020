@@ -31,32 +31,40 @@ object DaySeventeen extends App {
 
   case class StateCount(active: Long, inactive: Long)
 
+  trait CubeState {
+    def stateMap(): Map[Cube, State]
+  }
+
+  case class HyperCubeState() extends CubeState {
+    val inital4DUniverse: List[List[List[List[Char]]]] = List(List(source))
+    override def stateMap(): Map[Cube, State] = {
+      for {
+        w <- inital4DUniverse.zipWithIndex
+        z <- w._1.zipWithIndex
+        y <- z._1.zipWithIndex
+        x <- y._1.zipWithIndex
+      } yield HyperCube(x._2, y._2, z._2, w._2) -> (inital4DUniverse(w._2)(z._2)(y._2)(x._2) match {
+        case '#' => Active()
+        case '.' => Inactive()
+      })
+    }.toMap
+  }
+
+  case class NormalCubeState() extends CubeState {
+    val inital3DUniverse: List[List[List[Char]]] = List(source)
+    override def stateMap(): Map[Cube, State] = {
+      for {
+        z <- inital3DUniverse.zipWithIndex
+        y <- z._1.zipWithIndex
+        x <- y._1.zipWithIndex
+      } yield NormalCube(x._2, y._2, z._2) -> (inital3DUniverse(z._2)(y._2)(x._2) match {
+        case '#' => Active()
+        case '.' => Inactive()
+      })
+    }.toMap
+  }
+
   val source = Source.fromResource("17").getLines.toList.map(_.toCharArray.toList)
-  val inital3DUniverse: List[List[List[Char]]] = List(source)
-  val inital4DUniverse: List[List[List[List[Char]]]] = List(List(source))
-
-  lazy val hyperCubeState: Map[Cube, State] = {
-    for {
-      w <- inital4DUniverse.zipWithIndex
-      z <- w._1.zipWithIndex
-      y <- z._1.zipWithIndex
-      x <- y._1.zipWithIndex
-    } yield HyperCube(x._2, y._2, z._2, w._2) -> (inital4DUniverse(w._2)(z._2)(y._2)(x._2) match {
-      case '#' => Active()
-      case '.' => Inactive()
-    })
-  }.toMap
-
-  lazy val normalCubeState: Map[Cube, State] = {
-    for {
-      z <- inital3DUniverse.zipWithIndex
-      y <- z._1.zipWithIndex
-      x <- y._1.zipWithIndex
-    } yield NormalCube(x._2, y._2, z._2) -> (inital3DUniverse(z._2)(y._2)(x._2) match {
-      case '#' => Active()
-      case '.' => Inactive()
-    })
-  }.toMap
 
   case class HyperCube(x: Long, y: Long, z: Long, w: Long) extends Cube {
     override def neighbours(): List[Cube] = for {
@@ -97,6 +105,6 @@ object DaySeventeen extends App {
     }
   }
 
-  println(runCycles(normalCubeState))
-  println(runCycles(hyperCubeState))
+  println(runCycles(NormalCubeState().stateMap()))
+  println(runCycles(HyperCubeState().stateMap()))
 }
